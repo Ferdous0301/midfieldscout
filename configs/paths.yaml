@@ -1,0 +1,43 @@
+# Central configuration for data locations and source URLs.
+# Same file works locally and on Kaggle — only `roots.data_root` changes.
+
+roots:
+  # Override at runtime (env var FRI_DATA_ROOT) for Kaggle: /kaggle/working/data
+  data_root: "data"
+
+paths:
+  raw: "${data_root}/raw"
+  interim: "${data_root}/interim"
+  processed: "${data_root}/processed"
+  duckdb_file: "${data_root}/processed/recruitment.duckdb"
+
+wyscout:
+  # koenvo's GitHub repackaging of the Pappalardo et al. (2019) CC BY 4.0 dataset.
+  # Each match file is self-contained: {events, teams, players}.
+  base_url: "https://raw.githubusercontent.com/koenvo/wyscout-soccer-match-event-dataset/main/processed"
+  index_file: "README.md"          # match_id -> label -> source competition file
+  match_file_template: "files/{match_id}.json"
+
+  # Competitions in scope for v1 (season 2017/18, top-5 leagues).
+  # source_file values are as they appear in the index README.
+  competitions:
+    - name: "England"
+      source_file: "matches_England.json"
+      season: "2017/18"
+    - name: "Spain"
+      source_file: "matches_Spain.json"
+      season: "2017/18"
+    - name: "Italy"
+      source_file: "matches_Italy.json"
+      season: "2017/18"
+    - name: "Germany"
+      source_file: "matches_Germany.json"
+      season: "2017/18"
+    - name: "France"
+      source_file: "matches_France.json"
+      season: "2017/18"
+
+case_study:
+  position_scope: "CM"          # v1: central midfielders only
+  max_age: 23
+  min_minutes: 900               # ~10 full matches; revisit after checking minutes distribution
