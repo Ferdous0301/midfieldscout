@@ -284,6 +284,7 @@ def compute_and_insert_minutes(
 
 
 def init_db(db_path: str, schema_sql_path: str) -> duckdb.DuckDBPyConnection:
+    Path(db_path).parent.mkdir(parents=True, exist_ok=True)
     con = duckdb.connect(db_path)
     con.execute(Path(schema_sql_path).read_text())
     return con
