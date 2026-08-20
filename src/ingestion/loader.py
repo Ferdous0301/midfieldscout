@@ -336,54 +336,61 @@ def load_competition_file(
     n_events = 0
     n_participation = 0
 
-    for m in matches:
-        match_id = _safe_int(m.get("wyId"))
-        if match_id is None:
-            warnings.append(f"Skipping match with missing wyId: {m.get('label')}")
-            continue
+    con.execute("BEGIN TRANSACTION")
+    try:
+        for i, m in enumerate(matches):
+            match_id = _safe_int(m.get("wyId"))
+            if match_id is None:
+                warnings.append(f"Skipping match with missing wyId: {m.get('label')}")
+                continue
 
-        teams_data = m.get("teamsData") or {}
-        team_ids = list(teams_data.keys())
-        home_id, away_id = None, None
-        for tid_str, td in teams_data.items():
-            if td.get("side") == "home":
-                home_id = _safe_int(tid_str)
-            elif td.get("side") == "away":
-                away_id = _safe_int(tid_str)
+            teams_data = m.get("teamsData") or {}
+            team_ids = list(teams_data.keys())
+            home_id, away_id = None, None
+            for tid_str, td in teams_data.items():
+                if td.get("side") == "home":
+                    home_id = _safe_int(tid_str)
+                elif td.get("side") == "away":
+                    away_id = _safe_int(tid_str)
 
-        # Teams themselves come from a separate teams.json in the original
-        # layout; if not loaded separately, we at least register bare rows
-        # here so foreign keys resolve, to be enriched later.
-        for tid_str in team_ids:
-            tid = _safe_int(tid_str)
-            if tid is not None:
-                con.execute(
-                    "INSERT INTO teams (team_id, name) VALUES (?, ?) "
-                    "ON CONFLICT (team_id) DO NOTHING",
-                    [tid, f"team_{tid}"],
-                )
-                n_teams += 1
+            for tid_str in team_ids:
+                tid = _safe_int(tid_str)
+                if tid is not None:
+                    con.execute(
+                        "INSERT INTO teams (team_id, name) VALUES (?, ?) "
+                        "ON CONFLICT (team_id) DO NOTHING",
+                        [tid, f"team_{tid}"],
+                    )
+                    n_teams += 1
 
-        match_date = None
-        raw_date = m.get("dateutc")
-        if raw_date:
-            try:
-                match_date = datetime.strptime(raw_date, "%Y-%m-%d %H:%M:%S")
-            except ValueError:
-                pass
+            match_date = None
+            raw_date = m.get("dateutc")
+            if raw_date:
+                try:
+                    match_date = datetime.strptime(raw_date, "%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    pass
 
-        insert_match(con, match_id, competition, season, m.get("label"), home_id, away_id, match_date)
+            insert_match(con, match_id, competition, season, m.get("label"), home_id, away_id, match_date)
 
-        if not m.get("hasFormation") or not teams_data:
-            warnings.append(f"Match {match_id}: no formation data, minutes will be NULL.")
-        else:
-            n_participation += compute_and_insert_minutes(con, match_id, teams_data)
+            if not m.get("hasFormation") or not teams_data:
+                warnings.append(f"Match {match_id}: no formation data, minutes will be NULL.")
+            else:
+                n_participation += compute_and_insert_minutes(con, match_id, teams_data)
 
-        events = events_by_match.get(match_id)
-        if events:
-            n_events += insert_events(con, match_id, events)
-        else:
-            warnings.append(f"Match {match_id}: no events found in events feed.")
+            events = events_by_match.get(match_id)
+            if events:
+                n_events += insert_events(con, match_id, events)
+            else:
+                warnings.append(f"Match {match_id}: no events found in events feed.")
+
+            if (i + 1) % 25 == 0 or (i + 1) == len(matches):
+                logger.info(f"  progress: {i + 1}/{len(matches)} matches processed")
+
+        con.execute("COMMIT")
+    except Exception:
+        con.execute("ROLLBACK")
+        raise
 
     for w in warnings:
         logger.warning(w)
