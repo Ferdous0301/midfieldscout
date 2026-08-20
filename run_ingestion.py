@@ -23,8 +23,11 @@ import json
 
 def run_competition(cfg: dict, competition_name: str, source_file: str, season: str) -> None:
     raw_root = Path(cfg["resolved_paths"]["raw"])
-    matches_path = raw_root / f"matches_{competition_name}.json"
-    events_path = raw_root / f"events_{competition_name}.json"
+    # This Kaggle dataset layout nests matches/events in subfolders,
+    # with players.json/teams.json flat at raw_root — checked against
+    # the actual mounted paths, not assumed.
+    matches_path = raw_root / "matches" / f"matches_{competition_name}.json"
+    events_path = raw_root / "events" / f"events_{competition_name}.json"
 
     if not matches_path.exists():
         raise FileNotFoundError(
