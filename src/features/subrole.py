@@ -21,12 +21,29 @@ Formula:
     lateral_spread = std(start_y) over the player's events, as a proxy
     for how central vs. wide their involvement is.
 
-Classification rule (v1, heuristic thresholds — NOT a trained model):
-    - centroid_y within [35, 65]  (central third of pitch width)
-      AND lateral_spread < 20      -> "CM" (central midfielder)
-    - centroid_y within [35, 65] AND centroid_x < 45 -> "CDM"
-    - centroid_y within [35, 65] AND centroid_x > 60 -> "CAM"
-    - otherwise                    -> "WIDE_MID" (LM/RM)
+Classification rule (v2, corrected after real season-scale validation —
+see below for what v1 got wrong):
+    - centroid_y OUTSIDE [35, 65] -> "WIDE_MID" (position alone decides
+      central vs. wide; this is the only role of centroid_y)
+    - centroid_y within [35, 65] AND centroid_x < 45  -> "CDM"
+    - centroid_y within [35, 65] AND centroid_x > 60  -> "CAM"
+    - centroid_y within [35, 65] AND 45 <= centroid_x <= 60 -> "CM"
+
+    lateral_spread is NOT used to determine sub_role (see v1 correction
+    below) — retained only as a diagnostic/confidence field.
+
+v1 CORRECTION (documented, not silently changed): the original v1 rule
+additionally required `lateral_spread < 20` for a player to qualify as
+CM, on the theory that low positional variance indicates a settled
+central role. Validated against the FULL 5-league season (766 players,
+not a single match), this was wrong: season-level lateral_spread is
+naturally higher than single-match spread (rotations, different
+tactical setups across 38 games), so genuinely central players were
+falling through to the WIDE_MID default despite centroid_y correctly
+placing them in the central band. Result: 606/766 (79%) were
+misclassified as WIDE_MID, including clearly central players. v2 fixes
+this by using centroid_y as the sole central/wide determinant, and
+centroid_x alone to split the central group into CDM/CM/CAM.
 
 Inputs:
     - events table (start_x, start_y, player_id, event_name)
@@ -123,10 +140,10 @@ def classify_midfield_subroles(
 
 def _classify(centroid_x: float, centroid_y: float, lateral_spread: float) -> str:
     is_central = 35 <= centroid_y <= 65
-    if is_central and lateral_spread < 20:
-        return "CM"
-    if is_central and centroid_x < 45:
+    if not is_central:
+        return "WIDE_MID"
+    if centroid_x < 45:
         return "CDM"
-    if is_central and centroid_x > 60:
+    if centroid_x > 60:
         return "CAM"
-    return "WIDE_MID"
+    return "CM"
