@@ -65,9 +65,15 @@ DEFAULT_WEIGHTS = {
 TRUSTED_MINUTES = 1800.0
 
 
-def compute_age(birth_date: date, as_of: date) -> float | None:
-    if birth_date is None:
+def compute_age(birth_date, as_of: date) -> float | None:
+    if birth_date is None or pd.isnull(birth_date):
         return None
+    # DuckDB's fetchdf() returns birth_date as pandas Timestamp, not a
+    # plain datetime.date — normalize so subtraction always works
+    # regardless of caller (tested with both types after this bug was
+    # caught against real Kaggle data).
+    if hasattr(birth_date, "date"):
+        birth_date = birth_date.date()
     days = (as_of - birth_date).days
     return days / 365.25
 
