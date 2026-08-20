@@ -373,10 +373,16 @@ def load_competition_file(
 
             insert_match(con, match_id, competition, season, m.get("label"), home_id, away_id, match_date)
 
-            if not m.get("hasFormation") or not teams_data:
-                warnings.append(f"Match {match_id}: no formation data, minutes will be NULL.")
+            if not teams_data:
+                warnings.append(f"Match {match_id}: no teamsData at all, minutes will be NULL.")
             else:
                 n_participation += compute_and_insert_minutes(con, match_id, teams_data)
+                for tid_str, td in teams_data.items():
+                    if not td.get("hasFormation"):
+                        warnings.append(
+                            f"Match {match_id}, team {tid_str}: hasFormation=0, "
+                            f"that team's minutes may be incomplete."
+                        )
 
             events = events_by_match.get(match_id)
             if events:
