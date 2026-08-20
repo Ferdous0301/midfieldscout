@@ -238,16 +238,18 @@ def compute_and_insert_minutes(
         subbed_off_minute = {
             _safe_int(s.get("playerOut")): s.get("minute")
             for s in subs
-            if s.get("playerOut") is not None
+            if isinstance(s, dict) and s.get("playerOut") is not None
         }
         # minute a bench player was subbed ON, if any
         subbed_on_minute = {
             _safe_int(s.get("playerIn")): s.get("minute")
             for s in subs
-            if s.get("playerIn") is not None
+            if isinstance(s, dict) and s.get("playerIn") is not None
         }
 
         for p in lineup:
+            if not isinstance(p, dict):
+                continue
             pid = _safe_int(p.get("playerId"))
             if pid is None:
                 continue
@@ -256,6 +258,8 @@ def compute_and_insert_minutes(
             rows.append((match_id, pid, team_id, True, minutes))
 
         for p in bench:
+            if not isinstance(p, dict):
+                continue
             pid = _safe_int(p.get("playerId"))
             if pid is None:
                 continue
