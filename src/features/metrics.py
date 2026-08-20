@@ -88,7 +88,6 @@ def defensive_actions_per90(con: duckdb.DuckDBPyConnection) -> pd.DataFrame:
         )
         SELECT
             m.player_id,
-            m.total_minutes,
             coalesce(sum(d.n), 0) AS defensive_actions,
             CASE WHEN m.total_minutes > 0
                  THEN coalesce(sum(d.n), 0) / (m.total_minutes / 90.0)
