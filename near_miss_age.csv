@@ -1,13 +1,4 @@
 player_id,first_name,last_name,birth_date,total_minutes
-247248,Solly,March,1994-07-20,1844.0
-210044,Eric ,Dier,1994-01-15,2827.0
-18550,Emre,Can,1994-01-12,2094.0
-3803,Sergi,Darder Moll,1993-12-22,3057.0
-116170,Sebasti\u00e1n Carlos,Crist\u00f3foro Pepe,1993-08-23,266.0
-37739,Dennis,Praet,1994-05-14,2665.0
-14938,Maximilian,Arnold,1994-05-27,2533.0
-217874,Abdoulaye,Tour\u00e9,1994-03-03,2809.0
-134797,Hernani,Azevedo J\u00fanior,1994-03-27,550.0
 29640,Mario,Lemina,1993-09-01,1722.0
 247219,V\u00edctor,Camarasa Ferrando,1994-05-28,1252.0
 208716,Alessandro,Sch\u00f6pf,1994-02-07,813.0
@@ -31,3 +22,12 @@ player_id,first_name,last_name,birth_date,total_minutes
 15225,Sebastian,Maier,1993-09-18,259.0
 25504,Soualiho,Me\u00eft\u00e9,1994-03-17,1431.0
 209028,Adrien,Thomasson,1993-12-10,2589.0
+247248,Solly,March,1994-07-20,1844.0
+210044,Eric ,Dier,1994-01-15,2827.0
+18550,Emre,Can,1994-01-12,2094.0
+3803,Sergi,Darder Moll,1993-12-22,3057.0
+116170,Sebasti\u00e1n Carlos,Crist\u00f3foro Pepe,1993-08-23,266.0
+37739,Dennis,Praet,1994-05-14,2665.0
+14938,Maximilian,Arnold,1994-05-27,2533.0
+217874,Abdoulaye,Tour\u00e9,1994-03-03,2809.0
+134797,Hernani,Azevedo J\u00fanior,1994-03-27,550.0
